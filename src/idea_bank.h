@@ -3,10 +3,11 @@
 
 class IdeaBank {
 	list<Idea> ideas;
-	AVLTree<Index, string> index;
+	AVLTree<Index, string> keyword_index;
 	void parse_idea(string &line);
 	void index_list();
 	int get_last_id();
+	void index_keywords(list<string> keywords, int idea_id);
 	public:
 	IdeaBank();
 	bool read_from_file();
@@ -84,6 +85,8 @@ void IdeaBank::parse_idea(string &line) {
 	}
 	
 	Idea idea(id, proposer, keywords, contents);
+	
+	index_keywords(keywords, id);
 	ideas.push_back(idea);
 }
 
@@ -164,4 +167,14 @@ int IdeaBank::get_last_id() {
 	}
 }
 
+
+void IdeaBank::index_keywords(list<string> keywords, int idea_id) {
+	Index kword_index;
+	
+	keyword_index.AVLTree_print();
+	//for(list<string>::iterator it = keywords.begin(); it != keywords.end(); it++) {
+	//index.AVLTree_retrieve(*it, &kword_index);
+	//}
+	
+}
 #endif
