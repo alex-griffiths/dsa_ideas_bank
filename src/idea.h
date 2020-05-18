@@ -3,24 +3,24 @@
 
 class Idea {
 	int id;
-	string proposer, content;
-	list<string> keywords;
+	string proposer;
+	list<string> keywords, contents;
 	
 	public:
-	Idea(int id, string proposer, list<string> keywords, string content);
+	Idea(int id, string proposer, list<string> keywords, list<string> contents);
 	~Idea();
 	int get_id();
-	bool in_content(string word);
+	bool in_contents(string word);
 	bool in_keywords(string word);
 	friend ostream& operator<<(ostream& os, const Idea& idea);
 };
 
-Idea::Idea(int _id, string _proposer, list<string> _keywords, string _content) {
+Idea::Idea(int _id, string _proposer, list<string> _keywords, list<string> _contents) {
 	// Constructor
 	id       = _id;
 	proposer = _proposer;
 	keywords = _keywords;
-	content  = _content;
+	contents = _contents;
 }
 
 Idea::~Idea() {
@@ -30,7 +30,19 @@ Idea::~Idea() {
 ostream& operator<<(ostream& os, const Idea& idea) {
 	os << "ID: " << idea.id << endl;
 	os << "Proposer: " << idea.proposer << endl;
-	os << "Content: " << idea.content << endl;
+	os << "Keywords:" << endl;
+	
+	list<string> _keywords = idea.keywords;
+	for (list<string>::iterator it = _keywords.begin(); it != _keywords.end(); it++) {
+		os << "\t" << *it << endl;
+	}
+	
+	os << "Content: " << endl;
+	list<string> _contents = idea.contents;
+	for (list<string>::iterator it = _contents.begin(); it != _contents.end(); it++) {
+		os << *it << ' ';
+	}
+	os <<  endl;
 	
 	return os;
 }
@@ -38,13 +50,23 @@ ostream& operator<<(ostream& os, const Idea& idea) {
 
 bool Idea::in_keywords(string word) {
 	// If the word is in the keywords, return true;
-	return true;
+	for (list<string>::iterator it = keywords.begin(); it != keywords.end(); it++) {
+		if (*it == word) {
+			return true;
+		}
+	}
+	return false;
 }
 
-bool Idea::in_content(string word) {
-	// If the word is in the content return true;
-	return true;
+bool Idea::in_contents(string word) {
+	for (list<string>::iterator it = contents.begin(); it != contents.end(); it++) {
+		if (*it == word) {
+			return true;
+		}
+	}
+	return false;
 }
+
 
 int Idea::get_id() {
 	return id;

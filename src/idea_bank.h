@@ -3,7 +3,9 @@
 
 class IdeaBank {
 	list<Idea> ideas;
-	void parse_line(string &line);
+	AVLTree<Index, string> index;
+	void parse_idea(string &line);
+	void index_list();
 	int get_last_id();
 	public:
 	IdeaBank();
@@ -12,6 +14,7 @@ class IdeaBank {
 	void display_idea(int idea_id);
 	void display_all_ideas();
 	bool delete_idea(int idea_id);
+	void print_indicies();
 };
 
 IdeaBank::IdeaBank() {
@@ -30,7 +33,7 @@ bool IdeaBank::read_from_file() {
 		return false;
 	} else {
 		while (getline(idea_file, line)) {
-			parse_line(line);
+			parse_idea(line);
 		}
 	}
 	
@@ -38,50 +41,49 @@ bool IdeaBank::read_from_file() {
 	return true;
 }
 
-void IdeaBank::parse_line(string &line) {
+void IdeaBank::parse_idea(string &line) {
 	// Need to split the string
 	int split_counter = 0;
 	int id;
-	string proposer, content;
-	list<string> keywords;
 	
-	string val, keyword;
-	for (char &c: line) {
-		val += c;
-		keyword += c;
-		if (c == ',' && split_counter == 2) {
-			keyword.pop_back();
-			keywords.push_back(keyword);
-			keyword = "";
-		}
-		if (c == '|') {
-			val.pop_back();
-			switch (split_counter) {
-				case 0: {
-					id = stoi(val);
-				} break;
+	istringstream ss(line);
+	string proposer, content, val, keyword, split;
+	
+	list<string> keywords;
+	list<string> contents;
+	
+	while(getline(ss, split, '|')) {
+		cout << split;
+		switch(split_counter) {
+			case 0: {
+				id = stoi(split);
+			} break;
+			
+			case 1: {
+				proposer = split;
+			} break;
+			
+			case 2: {
+				istringstream kword_ss(split);
 				
-				case 1: {
-					proposer = val;
-				} break;
-				
-				case 2: {
-					// Need to catch the last keyword in the list.
-					keyword.pop_back();
+				while(getline(kword_ss, keyword, ',')) {
 					keywords.push_back(keyword);
-				} break;
+				}
+			} break;
+			
+			case 3: {
+				istringstream content_ss(split);
 				
-				case 3 : {
-					content = val;
-				} break;
-			}
-			val = "";
-			keyword = "";
-			split_counter++;
+				while(getline(content_ss, content, ' ')) {
+					contents.push_back(content);
+				}
+			} break;
 		}
+		
+		split_counter++;
 	}
 	
-	Idea idea(id, proposer, keywords, content);
+	Idea idea(id, proposer, keywords, contents);
 	ideas.push_back(idea);
 }
 
@@ -114,9 +116,10 @@ bool IdeaBank::delete_idea(int idea_id) {
 }
 
 bool IdeaBank::new_idea() {
+	// @TODO: This could be a whole lot cleaner.
 	string proposer;
 	string content;
-	list<string> keywords;
+	list<string> keywords, contents;
 	
 	cin.ignore(); // Make sure cin is ignoring any new lines in the iostream buffer.
 	cout << "Proposer Name: ";
@@ -125,13 +128,19 @@ bool IdeaBank::new_idea() {
 	cout << "Idea Content: ";
 	getline(cin, content);
 	
+	istringstream contents_ss(content);
+	string split_content;
+	while (getline(contents_ss, split_content, ' ')) {
+		contents.push_back(split_content);
+	}
+	
 	bool keywording = true;
 	cout << "Keywords (to stop type -1):" << endl;
 	while(keywording) {
 		string keyword;
 		getline(cin, keyword);
 		
-		if (keyword != "") {
+		if (keyword != "-1") {
 			keywords.push_back(keyword);
 		} else {
 			keywording = false;
@@ -140,7 +149,7 @@ bool IdeaBank::new_idea() {
 	
 	int id = get_last_id() + 1;
 	
-	Idea idea(id, proposer, keywords, content);
+	Idea idea(id, proposer, keywords, contents);
 	ideas.push_back(idea);
 	
 	return true;

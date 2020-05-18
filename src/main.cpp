@@ -1,13 +1,17 @@
 #include <string>
 #include <list>
+#include <vector>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
+#include "lib/avl_tree.h"
+
+#include "index.h"
 #include "idea.h"
 #include "idea_bank.h"
-
 
 int main() {
 	IdeaBank ideas_bank;
