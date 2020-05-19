@@ -4,10 +4,11 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
-#include "lib/avl_tree.h"
+#include "lib/AVLTree.h"
 
 #include "index.h"
 #include "idea.h"
@@ -23,9 +24,9 @@ int main() {
 		cout << "2) Print the ideas bank" << endl;
 		cout << "3) Show a single idea" << endl;
 		cout << "4) Add an idea" << endl;
-		cout << ") Print word indices" << endl;
-		cout << ") Search for related ideas from ideas bank" << endl;
-		cout << ") Search for related ideas from indexing tree" << endl;
+		cout << "5) Print word indices" << endl;
+		cout << "6) Search for related ideas from ideas bank" << endl;
+		cout << "7) Search for related ideas from indexing tree" << endl;
 		cout << ") Related ideas of an idea" << endl;
 		cout << "9) Delete an idea" << endl;
 		cout << "0) Quit" << endl;
@@ -64,15 +65,23 @@ int main() {
 			} break;
 			
 			case 5: {
-				
+				ideas_bank.print_keywords_index();
 			} break;
 			
 			case 6: {
+				string query;
+				cout << "Enter query word: ";
+				cin >> query;
 				
+				ideas_bank.display_related_ideas(query);
 			} break;
 			
 			case 7: {
+				string query;
+				cout << "Enter query word: ";
+				cin >> query;
 				
+				ideas_bank.display_related_indexed_ideas(query);
 			} break;
 			
 			case 8: {

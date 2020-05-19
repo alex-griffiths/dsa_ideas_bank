@@ -55,8 +55,8 @@ template <class Type, class KType>
 bool AVLTree<Type, KType>::AVL_insert(Type data_in) {
 	Node<Type> *new_ptr;
 	bool taller;
-	
-	if (!(new_ptr == Node<Type>)) {
+	if (!(new_ptr == new Node<Type>)) {
+		cout << data_in.key << endl;
 		return false;
 	}
 	
@@ -260,7 +260,7 @@ bool AVLTree<Type, KType>::AVL_delete(KType delete_key) {
 	Node<Type> *new_root;
 	
 	new_root = _delete(tree, delete_key, shorter, success);
- if (success) {
+	if (success) {
 		tree = new_root;
 		count--;
 	}
@@ -561,6 +561,12 @@ void AVLTree<Type, KType>::_print(Node<Type> *root, int level) {
 		for (i = 0; i <= level; i++) {
 			cout << "....";
 			cout << setw(3) << root->data.key;
+			
+			vector<int> ids = root->data.id_list;
+			
+			for(vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
+				cout << it << ", ";
+			}
 			
 			if (root->bal == LH) {
 				cout << " (LH)" << endl;

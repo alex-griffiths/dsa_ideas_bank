@@ -10,8 +10,8 @@ class Idea {
 	Idea(int id, string proposer, list<string> keywords, list<string> contents);
 	~Idea();
 	int get_id();
-	bool in_contents(string word);
-	bool in_keywords(string word);
+	bool query_in_content(string word);
+	bool query_in_keywords(string word);
 	friend ostream& operator<<(ostream& os, const Idea& idea);
 };
 
@@ -48,19 +48,21 @@ ostream& operator<<(ostream& os, const Idea& idea) {
 }
 
 
-bool Idea::in_keywords(string word) {
+bool Idea::query_in_keywords(string word) {
 	// If the word is in the keywords, return true;
 	for (list<string>::iterator it = keywords.begin(); it != keywords.end(); it++) {
 		if (*it == word) {
+			cout << "Word found in keywords" << endl;
 			return true;
 		}
 	}
 	return false;
 }
 
-bool Idea::in_contents(string word) {
+bool Idea::query_in_content(string word) {
 	for (list<string>::iterator it = contents.begin(); it != contents.end(); it++) {
 		if (*it == word) {
+			cout << "Word found in content" << endl;
 			return true;
 		}
 	}
