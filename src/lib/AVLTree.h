@@ -44,7 +44,7 @@ class AvlTree
 	NODE<TYPE> *_retrieve        (KTYPE        key, 
 																															NODE<TYPE>  *root);
 	
-	void  _traversal  (void (*process)(TYPE dataProc, int), int _purge_id,
+	void  _traversal  (void (*process)(TYPE *dataProc, int), int _purge_id,
 																				NODE<TYPE>    *root); 
 	
 	void  _destroyAVL (NODE<TYPE>  *root);
@@ -58,8 +58,8 @@ class AvlTree
 	bool  AVL_Insert   (TYPE   dataIn); 
 	bool  AVL_Delete   (KTYPE  dltKey);
 	bool  AVL_Retrieve (KTYPE  key,     TYPE& dataOut);
-	void  AVL_Traverse (void (*process)(TYPE  dataProc, int), int _purge_id); //in-order
-	
+	void  AVL_Traverse (void (*process)(TYPE * dataProc, int), int _purge_id); //in-order
+	void AVL_Replace(KTYPE key, TYPE &index);
 	bool  AVL_Empty    (void);
 	bool  AVL_Full     (void);
 	int   AVL_Count    (void);
@@ -360,6 +360,23 @@ NODE<TYPE>* AvlTree<TYPE, KTYPE>
 	} // switch 
 	return root;
 }	//  rightBalance   
+
+template <class TYPE, class KTYPE>
+void AvlTree<TYPE, KTYPE>::AVL_Replace(KTYPE key, TYPE &index) {
+	NODE<TYPE>* node;
+	
+	if (!tree) {
+	}
+	
+	node = _retrieve(key, tree);
+	if (node) {
+		node->data = index;
+		
+	} else {
+		
+	}
+}
+
 
 /*	====================== AVL_Delete ====================== 
 This function deletes a node from the tree and rebalances 
@@ -690,7 +707,7 @@ Post  all nodes processed in LNR (inorder) sequence
 
 template <class TYPE, class KTYPE>
 void  AvlTree<TYPE, KTYPE> 
-::  AVL_Traverse (void (*process)(TYPE dataProc, int), int _purge_id)
+::  AVL_Traverse (void (*process)(TYPE *dataProc, int), int _purge_id)
 {
 	//	Statements 
 	_traversal (process, _purge_id, tree);
@@ -706,14 +723,15 @@ Post  all nodes processed
 
 template <class TYPE, class KTYPE>
 void  AvlTree<TYPE, KTYPE> 
-::  _traversal (void(*process)(TYPE dataproc, int), int _purge_id,
+::  _traversal (void(*process)(TYPE *dataproc, int), int _purge_id,
 																NODE<TYPE> *root)
 {
 	//	Statements 
 	if (root)
 	{
 		_traversal  (process, _purge_id, root->left);
-		process     (root->data, _purge_id);
+		Index index = root->data;
+		process     (&index, _purge_id);
 		_traversal  (process, _purge_id, root->right);
 	} //  if 
 	return;
@@ -839,7 +857,7 @@ Post    Tree has been printed.
 */
 template <class TYPE, class KTYPE>
 void  AvlTree<TYPE, KTYPE> ::  _print (NODE<TYPE> *root,
-                                       int         level) 
+																																							int         level) 
 {
 	/* Local Definitions */
 	int i;

@@ -1,0 +1,30 @@
+1. Data Structures
+Vector - A variable length linear data structure. This is only used to store ids in the index struct. A very usable structure, but not particularly efficient when deleting and inserting as new memory needs to be allocated.
+Linked List - One of the most commonly used structures in this program. Because each node in the list is pointed to by another node, it's possible to store nodes in non-contiguous memory. Traversing this structure isn't amazing if you know where a particular node should be because you still need to visit every node before the goal, unlike the vector where you can access it directly. This structure is also very good for deleting because you can just free the memory of a specific node, and repair the link between broken nodes by shifting pointers.
+AVL Tree - A form of binary search tree that balances itself each time the tree is modified. This is used for storing the Index struct which contains each unique word, and the id of each idea that word occurs in.
+
+
+2. Search Algorithm 1
+For each idea in the ideas bank
+Loop over every word in the idea's content and keywords. 
+If the word is found, output the idea.
+
+For m ideas in the ideas bank, this is O(m) complexity. Another aspect of the search to consider is the length of the content list. While one idea might not have many words, another idea may have lots, which increases the over all time that it takes to complete a search.
+
+3. Search Algorithm 2
+Given a query word check if the current node of the AVL tree is greater than or less than the query. 
+If it is greater than, continue down the right side of the tree, checking for > and < at each node. Also check each node to see if there is a match.
+If there is a match, iterate of the ids in the id list and retrieve each idea with that given idea.
+
+This would be O(log2n) complexity as each node you visit reduces the remaining search space by half. One point where the efficiency of this algorithm fails is the retrieval of the ideas. Additionally, the output of the ideas could have been improved by looping over the ideas, and at each idea, checking if it was one of the related ideas instead of looping over the idea bank looking for each individual idea to print. This would reduce the amount of times needed to loop over the ideas bank.
+
+
+4. Justifications
+I used a vector for the index id_list because it made the code simpler, however if I were to be designing this for a much larger ideas bank where there could be 100's of thousands of ideas, I'd probably consider another data structure that had better effiency instead of constantly having to resize a vector when inserting/deleting.
+
+I used linked lists for the content and keywords for each idea because I couldn't know ahead of time how much memory would be needed for each idea. I could have used a vector for this, but I didn't want to accept the cost of repeatedly needing to resize the vector for each word/keyword that was inserted. Using a linked list mitigated this problem, however it did reduce the efficiency when performing search operations. This was somewhat mitigated by indexing each word which meant finding ideas based on a query search was quite efficient.
+
+I used linked lists for storing each idea in the ideas bank for a similar reason.
+
+I used the AVL tree for the index partly because I was required to for the assignment but it also compensated for the poor linear search efficiency of the linked list when searching for related ideas. I did still have to iterate over each element of the ideas bank idea linked list to retrieve the idea when a query was matched, but this was a much more efficient way overall instead of having to iterate over each word in each idea to find related ideas. Perhaps a better structure could have been used for ideas, but I'm not sure what would be best.
+

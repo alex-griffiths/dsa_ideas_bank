@@ -63,7 +63,8 @@ void IdeaBank::parse_idea(string &line) {
 	while(getline(ss, split, '|')) {
 		switch(split_counter) {
 			case 0: {
-				id = stoi(split);
+				//id = stoi(split);
+				id = get_last_id() + 1;
 			} break;
 			
 			case 1: {
@@ -192,37 +193,33 @@ void IdeaBank::display_related_indexed_ideas(string query) {
 	
 }
 
+void delete_id(Index *index, int id) {
+	vector<int> id_list = index->id_list;
+	id_list.erase(remove(id_list.begin(), id_list.end(), id), id_list.end());
+	index->id_list = id_list;
+}
+
 void IdeaBank::purge_idea_from_tree(Idea idea) {
-	// Loop over words and retrieve each index of each word. Then we remove the idea from index.
 	int id = idea.get_id();
 	list<string> contents = idea.get_contents();
 	for(list<string>::iterator it = contents.begin(); it != contents.end(); it++) {
-		string word = *it;
 		Index index;
-		idea_index.AVL_Retrieve(word, index);
+		idea_index.AVL_Retrieve(*it, index);
 		
 		vector<int> id_list = index.id_list;
 		
-		if (id_list.size() == 1) {
-			if (id != id_list[0]) {
-				// This should never happen.
-				cout << "Error in delete";
-				exit(100);
-			}
-			// Delete the word from the index.
-			idea_index.AVL_Delete(word);
-		} else {
-			// Iterate over id list and delete id.
-			// Not efficient.
-			for (vector<int>::iterator it = id_list.begin(); it != id_list.end(); it++) {
-				if (*it == id) {
-					vector<int>::iterator del_it = it;
-					it++;
-					
-					id_list.erase(del_it);
-				}
+		for(int i = 0; i < id_list.size(); i++) {
+			if (id_list[i] == id) {
+				id_list.erase(id_list.begin() + i);
+				index.id_list = id_list;
+				idea_index.AVL_Replace(*it, index); // Replace the current index with an updated index with new id list.
 			}
 		}
+		
+		if (index.id_list.size() == 0) {
+			idea_index.AVL_Delete(*it);
+		}
+		
 	}
 }
 
@@ -232,13 +229,12 @@ bool IdeaBank::delete_idea(int idea_id) {
 	if (ideas.size() > 0) {
 		int purge_id;
 		for (list<Idea>::iterator it = ideas.begin(); it != ideas.end(); it++){
-			cout << (*it).get_id() << endl;
 			if ((*it).get_id() == idea_id) {
 				purge_id = (*it).get_id();
 				list<Idea>::iterator del_it = it;
 				it++;
 				
-				//purge_idea_from_tree(*del_it);
+				purge_idea_from_tree(*del_it);
 				
 				ideas.erase(del_it);
 				
