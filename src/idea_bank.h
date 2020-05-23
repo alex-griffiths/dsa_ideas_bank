@@ -15,9 +15,10 @@ class IdeaBank {
 	IdeaBank();
 	bool read_from_file();
 	bool new_idea();
-	void display_idea(int idea_id);
 	void display_related_ideas(string query);
 	void display_related_indexed_ideas(string query);
+	Idea get_idea(int idea_id);
+	void display_idea(int idea_id);
 	void display_all_ideas();
 	bool delete_idea(int idea_id);
 	void print_keywords_index();
@@ -141,12 +142,21 @@ void IdeaBank::display_all_ideas() {
 	}
 }
 
+Idea IdeaBank::get_idea(int idea_id) {
+	for (list<Idea>::iterator it = ideas.begin(); it != ideas.end(); it++){
+		if ((*it).get_id() == idea_id) {
+			return *it;
+		}
+	}
+}
+
 void IdeaBank::display_idea(int idea_id) {
 	for (list<Idea>::iterator it = ideas.begin(); it != ideas.end(); it++){
 		if ((*it).get_id() == idea_id) {
-			cout << (*it) << endl;
+			cout << *it << endl;
 		}
 	}
+	
 }
 
 // Iterates over all ideas in the idea bank and checks if the query string is in the content or keywords.
@@ -166,28 +176,55 @@ void IdeaBank::display_related_ideas(string query) {
 
 
 // Iterates over each indexed word in the AVL Tree, 
-// Worst Case: O(log2n)
-// Best Case: O(1)
+// This kind of works. I'm not sure why, but at the end of the function, it exits the program by automatically running the menu loop.
 void IdeaBank::display_related_indexed_ideas(string query) {
-	Index word_index;
-	if (ideas.size() > 0 && idea_index.AVL_Retrieve(query, word_index)) {
-		// Output the index.
-		vector<int> ids = word_index.id_list;
-		cout << "Keyword: " << word_index.key << " | Idea Ids: { ";
-		for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
-			if (it != ids.begin()) {
-				cout << ", ";
+	// Check for AND/OR operators.
+	bool _and, _or = false;
+	bool valid = true;
+	list<Idea> related_ideas;
+	
+	istringstream ss_query(query);
+	string query_word;
+	list<string> query_words;
+	
+	while(getline(ss_query, query_word, '&')) {
+		query_words.push_back(query_word);
+		_and = true;
+	}
+	
+	if (!_and) {
+		while(getline(ss_query, query_word, '|')) {
+			query_words.push_back(query_word);
+		}
+	}
+	
+	if (!_and && !_or) {
+		query_words.push_back(query);
+	}
+	
+	for(list<string>::iterator it = query_words.begin(); it != query_words.end(); it++) {
+		Index word_index;
+		if (ideas.size() > 0 && idea_index.AVL_Retrieve(*it, word_index)) {
+			// Output the index.
+			vector<int> ids = word_index.id_list;
+			
+			for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
+				Idea idea = get_idea(*it);
+				
+				related_ideas.push_back(idea);
 			}
-			cout << *it;
+		} else {
+			if (_and) {
+				valid = false;
+			}
+			cout << "Could not find an idea related to this query string: " << query << endl;
 		}
-		
-		cout << " }" << endl;
-		
-		for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
-			display_idea(*it);
+	}
+	
+	if (valid) {
+		for(list<Idea>::iterator it = related_ideas.begin(); it != related_ideas.end(); it++) {
+			cout << *it << endl;
 		}
-	} else {
-		cout << "Could not find an idea related to this query string: " << query << endl;
 	}
 	
 }

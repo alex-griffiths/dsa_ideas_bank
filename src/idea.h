@@ -8,8 +8,10 @@ class Idea {
 	
 	public:
 	Idea(int id, string proposer, list<string> keywords, list<string> contents);
+	//Idea(Idea idea);
 	~Idea();
 	int get_id();
+	string get_proposer();
 	bool query_in_content(string word);
 	bool query_in_keywords(string word);
 	list<string> get_keywords();
@@ -24,6 +26,13 @@ Idea::Idea(int _id, string _proposer, list<string> _keywords, list<string> _cont
 	keywords = _keywords;
 	contents = _contents;
 }
+//
+//Idea::Idea(Idea idea) {
+//id = idea.get_id();
+//propposer = idea.get_proposer();
+//keywords = idea.get_keywords();
+//contents = idea.get_contents();
+//}
 
 Idea::~Idea() {
 	// Destructor
@@ -49,6 +58,9 @@ ostream& operator<<(ostream& os, const Idea& idea) {
 	return os;
 }
 
+string Idea::get_proposer() {
+	return proposer;
+}
 
 bool Idea::query_in_keywords(string word) {
 	// If the word is in the keywords, return true;

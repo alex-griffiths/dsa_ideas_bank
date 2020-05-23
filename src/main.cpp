@@ -48,7 +48,8 @@ int main() {
 				cout << "Please input the id of the Idea you would like to display: ";
 				cin >> idea_id;
 				
-				ideas_bank.display_idea(idea_id);
+				Idea idea = ideas_bank.get_idea(idea_id);
+				cout << idea << endl;
 			} break;
 			
 			case 4: {
@@ -79,7 +80,7 @@ int main() {
 			
 			case 7: {
 				string query;
-				cout << "Enter query word: ";
+				cout << "Enter query word (You can use & or | to chain queries): ";
 				cin >> query;
 				
 				ideas_bank.display_related_indexed_ideas(query);
@@ -105,6 +106,8 @@ int main() {
 				cout << "Please input a valid choice" << endl;
 			}
 		}
+		
+		cin.ignore();
 	}
 	
 	return 0;
