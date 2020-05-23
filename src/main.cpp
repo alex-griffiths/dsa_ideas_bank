@@ -5,13 +5,15 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
+#include <cctype>
 
 using namespace std;
 
 #include "lib/AVLTree.h"
 
-#include "index.h"
 #include "idea.h"
+#include "index.h"
 #include "idea_bank.h"
 
 int main() {
@@ -27,8 +29,7 @@ int main() {
 		cout << "5) Print word indices" << endl;
 		cout << "6) Search for related ideas from ideas bank" << endl;
 		cout << "7) Search for related ideas from indexing tree" << endl;
-		cout << ") Related ideas of an idea" << endl;
-		cout << "9) Delete an idea" << endl;
+		cout << "8) Delete an idea" << endl;
 		cout << "0) Quit" << endl;
 		
 		cin >> choice;
@@ -93,6 +94,7 @@ int main() {
 					cout << "There was a problem deleting this idea. It may not exist, or another error may have occured." << endl;
 				}
 			} break;
+			
 			
 			case 0: {
 				cout << "Exiting..." << endl;

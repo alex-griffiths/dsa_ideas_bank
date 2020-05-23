@@ -3,11 +3,14 @@
 
 class IdeaBank {
 	list<Idea> ideas;
-	AvlTree<Index, string> keyword_index;
+	AvlTree<Index, string> idea_index;
 	void parse_idea(string &line);
 	void index_list();
 	int get_last_id();
-	void index_keywords(list<string> keywords, int idea_id);
+	void index_idea(Idea idea);
+	void purge_idea_from_tree(Idea idea);
+	void to_lower(string s);
+	void to_alpha(string s);
 	public:
 	IdeaBank();
 	bool read_from_file();
@@ -88,7 +91,7 @@ void IdeaBank::parse_idea(string &line) {
 	}
 	
 	Idea idea(id, proposer, keywords, contents);
-	index_keywords(keywords, id);
+	index_idea(idea);
 	ideas.push_back(idea);
 }
 
@@ -114,22 +117,19 @@ bool IdeaBank::new_idea() {
 	bool keywording = true;
 	// Handle comma separation.
 	// Need to strip white space at the end.
-	cout << "Keywords (to stop type -1):" << endl;
-	while(keywording) {
-		string keyword;
-		getline(cin, keyword);
-		
-		if (keyword != "-1") {
-			keywords.push_back(keyword);
-		} else {
-			keywording = false;
-		}
+	cout << "Keywords (separate each keyword with a comma):" << endl;
+	string cin_keywords, split_keywords;
+	getline(cin, cin_keywords);
+	istringstream ss_keywords(cin_keywords);
+	
+	while(getline(ss_keywords, split_keywords, ',')) {
+		keywords.push_back(split_keywords);
 	}
 	
 	int id = get_last_id() + 1;
 	
 	Idea idea(id, proposer, keywords, contents);
-	index_keywords(keywords, id);
+	index_idea(idea);
 	ideas.push_back(idea);
 	
 	return true;
@@ -149,6 +149,9 @@ void IdeaBank::display_idea(int idea_id) {
 	}
 }
 
+// Iterates over all ideas in the idea bank and checks if the query string is in the content or keywords.
+
+// Worst Case: O(n)
 void IdeaBank::display_related_ideas(string query) {
 	if (ideas.size() > 0) {
 		for (list<Idea>::iterator it = ideas.begin(); it != ideas.end(); it++) {
@@ -161,12 +164,16 @@ void IdeaBank::display_related_ideas(string query) {
 	}
 }
 
+
+// Iterates over each indexed word in the AVL Tree, 
+// Worst Case: O(log2n)
+// Best Case: O(1)
 void IdeaBank::display_related_indexed_ideas(string query) {
-	Index key_index;
-	if (ideas.size() > 0 && keyword_index.AVL_Retrieve(query, key_index)) {
+	Index word_index;
+	if (ideas.size() > 0 && idea_index.AVL_Retrieve(query, word_index)) {
 		// Output the index.
-		vector<int> ids = key_index.id_list;
-		cout << "Keyword: " << key_index.key << " | Idea Ids: { ";
+		vector<int> ids = word_index.id_list;
+		cout << "Keyword: " << word_index.key << " | Idea Ids: { ";
 		for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
 			if (it != ids.begin()) {
 				cout << ", ";
@@ -182,26 +189,68 @@ void IdeaBank::display_related_indexed_ideas(string query) {
 	} else {
 		cout << "Could not find an idea related to this query string: " << query << endl;
 	}
+	
+}
+
+void IdeaBank::purge_idea_from_tree(Idea idea) {
+	// Loop over words and retrieve each index of each word. Then we remove the idea from index.
+	int id = idea.get_id();
+	list<string> contents = idea.get_contents();
+	for(list<string>::iterator it = contents.begin(); it != contents.end(); it++) {
+		string word = *it;
+		Index index;
+		idea_index.AVL_Retrieve(word, index);
+		
+		vector<int> id_list = index.id_list;
+		
+		if (id_list.size() == 1) {
+			if (id != id_list[0]) {
+				// This should never happen.
+				cout << "Error in delete";
+				exit(100);
+			}
+			// Delete the word from the index.
+			idea_index.AVL_Delete(word);
+		} else {
+			// Iterate over id list and delete id.
+			// Not efficient.
+			for (vector<int>::iterator it = id_list.begin(); it != id_list.end(); it++) {
+				if (*it == id) {
+					vector<int>::iterator del_it = it;
+					it++;
+					
+					id_list.erase(del_it);
+				}
+			}
+		}
+	}
 }
 
 
+// This isn't particularly efficient. I couldn't get a nicer solution working.
 bool IdeaBank::delete_idea(int idea_id) {
 	if (ideas.size() > 0) {
+		int purge_id;
 		for (list<Idea>::iterator it = ideas.begin(); it != ideas.end(); it++){
+			cout << (*it).get_id() << endl;
 			if ((*it).get_id() == idea_id) {
-				list<Idea>::iterator next = it++;
-				ideas.erase(it);
-				it = next;
+				purge_id = (*it).get_id();
+				list<Idea>::iterator del_it = it;
+				it++;
+				
+				//purge_idea_from_tree(*del_it);
+				
+				ideas.erase(del_it);
+				
 				return true;
 			}
 		}
+		
 	} else {
 		cout << "There are no ideas to delete" << endl;
 	}
 	return false;
 }
-
-
 
 int IdeaBank::get_last_id() {
 	if (ideas.size() > 0) {
@@ -213,13 +262,21 @@ int IdeaBank::get_last_id() {
 }
 
 
-void IdeaBank::index_keywords(list<string> keywords, int idea_id) {
+void IdeaBank::index_idea(Idea idea) {
 	Index kword_index, new_index;
 	
 	NODE<Index> new_node;
 	
+	list<string> keywords = idea.get_keywords();
+	list<string> contents = idea.get_contents();
+	int idea_id = idea.get_id();
+	
+	// Index keywords.
 	for(list<string>::iterator it = keywords.begin(); it != keywords.end(); it++) {
 		string keyword = *it;
+		
+		transform(keyword.begin(), keyword.end(), keyword.begin(), [](unsigned char c){return tolower(c);});
+		
 		new_index.key = keyword;
 		new_index.id_list = {idea_id};
 		
@@ -228,13 +285,33 @@ void IdeaBank::index_keywords(list<string> keywords, int idea_id) {
 		new_node.right = NULL;
 		new_node.bal = EH;
 		
-		keyword_index.AVL_Insert(new_index);
+		idea_index.AVL_Insert(new_index);
+	}
+	
+	for(list<string>::iterator it = contents.begin(); it != contents.end(); it++) {
+		string word = *it;
+		
+		transform(word.begin(), word.end(), word.begin(), [](unsigned char c){return tolower(c);});
+		word.erase(remove_if(word.begin(), word.end(), [](char c) {
+																							return !(isalpha(c) || c == ' ');
+																							}), word.end());
+		
+		new_index.key = word;
+		new_index.id_list = {idea_id};
+		
+		new_node.data = new_index;
+		new_node.left = NULL;
+		new_node.right = NULL;
+		new_node.bal = EH;
+		
+		idea_index.AVL_Insert(new_index);
 	}
 }
 
+
 void IdeaBank::print_keywords_index() {
-	cout << "Keywords index count: " << keyword_index.AVL_Count() << endl;
-	keyword_index.AVL_Print();
+	cout << "Keywords index count: " << idea_index.AVL_Count() << endl;
+	idea_index.AVL_Print();
 }
 
 

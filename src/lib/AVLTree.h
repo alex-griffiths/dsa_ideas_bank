@@ -44,7 +44,7 @@ class AvlTree
 	NODE<TYPE> *_retrieve        (KTYPE        key, 
 																															NODE<TYPE>  *root);
 	
-	void  _traversal  (void (*process)(TYPE dataProc),
+	void  _traversal  (void (*process)(TYPE dataProc, int), int _purge_id,
 																				NODE<TYPE>    *root); 
 	
 	void  _destroyAVL (NODE<TYPE>  *root);
@@ -58,7 +58,7 @@ class AvlTree
 	bool  AVL_Insert   (TYPE   dataIn); 
 	bool  AVL_Delete   (KTYPE  dltKey);
 	bool  AVL_Retrieve (KTYPE  key,     TYPE& dataOut);
-	void  AVL_Traverse (void (*process)(TYPE  dataProc)); //in-order
+	void  AVL_Traverse (void (*process)(TYPE  dataProc, int), int _purge_id); //in-order
 	
 	bool  AVL_Empty    (void);
 	bool  AVL_Full     (void);
@@ -143,7 +143,6 @@ NODE<TYPE>*  AvlTree<TYPE,  KTYPE>
 			switch (root->bal)
 		{
 			case LH: // Was left high--rotate 
-			cout << "About to left balance" << endl;
 			root = leftBalance (root, taller);
 			break;
 			
@@ -180,12 +179,17 @@ NODE<TYPE>*  AvlTree<TYPE,  KTYPE>
 			root = rightBalance (root, taller);
 			break;
 		} //  switch 
-	} else { // new ptr key must be the same as the root.
-		// @DEAN: This is here to handle the case that the keyword already exists in
-		// in the AVL Tree, and if it does, I just push the idea id into the Index 
-		// struct.
-		cout << "EQUAL" << endl;
-		root->data.id_list.push_back(newPtr->data.id_list.front());
+	} else if (root->data.key == newPtr->data.key) { // new ptr key must be the same as the root.
+		bool unique_id = true;
+		for (vector<int>::iterator it = root->data.id_list.begin(); it != root->data.id_list.end(); it++) {
+			if (*it == newPtr->data.id_list.front()) {
+				unique_id = false;
+			}
+		}
+		if (unique_id) {
+			root->data.id_list.push_back(newPtr->data.id_list.front());
+		}
+		taller = false;
 		
 	}//  else new data >= root data 
 	
@@ -222,7 +226,6 @@ NODE<TYPE>  *AvlTree<TYPE,  KTYPE>
 		taller   = false;
 		break;
 		case EH: // This is an error 
-		// @DEAN
 		cout <<"\n\a\aError in leftBalance\n";
 		exit (100); 
 		case RH: // Right High - Requires double rotation: 
@@ -687,10 +690,10 @@ Post  all nodes processed in LNR (inorder) sequence
 
 template <class TYPE, class KTYPE>
 void  AvlTree<TYPE, KTYPE> 
-::  AVL_Traverse (void (*process)(TYPE dataProc))
+::  AVL_Traverse (void (*process)(TYPE dataProc, int), int _purge_id)
 {
 	//	Statements 
-	_traversal (process, tree);
+	_traversal (process, _purge_id, tree);
 	return;
 }	// end AVL_Traverse 
 
@@ -703,15 +706,15 @@ Post  all nodes processed
 
 template <class TYPE, class KTYPE>
 void  AvlTree<TYPE, KTYPE> 
-::  _traversal (void(*process)(TYPE dataproc),
+::  _traversal (void(*process)(TYPE dataproc, int), int _purge_id,
 																NODE<TYPE> *root)
 {
 	//	Statements 
 	if (root)
 	{
-		_traversal  (process, root->left);
-		process     (root->data);
-		_traversal  (process, root->right);
+		_traversal  (process, _purge_id, root->left);
+		process     (root->data, _purge_id);
+		_traversal  (process, _purge_id, root->right);
 	} //  if 
 	return;
 }	//  _traversal 

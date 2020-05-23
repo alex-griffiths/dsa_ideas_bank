@@ -12,6 +12,8 @@ class Idea {
 	int get_id();
 	bool query_in_content(string word);
 	bool query_in_keywords(string word);
+	list<string> get_keywords();
+	list<string> get_contents();
 	friend ostream& operator<<(ostream& os, const Idea& idea);
 };
 
@@ -72,6 +74,14 @@ bool Idea::query_in_content(string word) {
 
 int Idea::get_id() {
 	return id;
+}
+
+list<string> Idea::get_keywords() {
+	return keywords;
+}
+
+list<string> Idea::get_contents() {
+	return contents;
 }
 
 
